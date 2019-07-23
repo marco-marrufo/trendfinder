@@ -87,7 +87,7 @@ def main():
         df_peaks = text_cleaner.clean(df_peaks)
         df_peaks = fake_news_classifier.classify(tfidf, nb_body, df_peaks)
         print(df_peaks['title'], df_peaks['label'])
-        df_peaks.to_excel()
+        df_peaks.to_excel(PEAK_XLSX)
 
 # Runs main on calling the script from the command line.
 if __name__ == "__main__":
