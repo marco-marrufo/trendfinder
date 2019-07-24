@@ -21,6 +21,7 @@ def download(keyword, topdomain, num_articles, rest):
 
     for result in search_news(query=keyword, tld=topdomain, lang='en', num=10, stop=num_articles, pause=rest):
         try:
+            print('Searching for: ', keyword)
             article = {}
             news = Article(result)
             news.download()
@@ -28,7 +29,7 @@ def download(keyword, topdomain, num_articles, rest):
             news.nlp()
             article['link'] = result
             article['title'] = news.title
-            article['firm'] = keyword.lower().split()
+            article['firm'] = keyword
             article['text'] = news.text
             article['keywords'] = news.keywords
             if news.publish_date:
@@ -50,7 +51,7 @@ def mark_relevancy(newsPaper):
     # 1 - Partial match between firm name and article keywords
     # 0 - No match between firm name and article keywords
     for article in newsPaper['articles']:
-        article['relevancy'] = filter(article['firm'], article['keywords'])
+        article['relevancy'] = filter(article['firm'].lower().split(), article['keywords'])
     return newsPaper
 
 def filter(term, search_list):

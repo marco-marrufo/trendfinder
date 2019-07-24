@@ -62,6 +62,7 @@ def trend_menu():
         switcher = {
             0: load_prompt,
             1: output_prompt,
+            2: settings,
             3: run,
             9: back
         }
@@ -81,7 +82,7 @@ def trend_menu():
         print("Current Firm List Input: {0}".format(INPUT_FIRMS if bool(INPUT_FIRMS) else "nothing loaded"))
         print('\n')
         input_filename = input("Please enter the firm list file name or 'quit' to return to the Trend Menu.\n>>> ")
-        if input_filename == 'quit':
+        if input_filename.lower() == 'quit':
             print('Quitting without saving.')
             time.sleep(SLEEP_TIME)
         else:
@@ -92,6 +93,11 @@ def trend_menu():
     def output_prompt():
         print("Not yet implemented.")
         time.sleep(SLEEP_TIME)
+
+    def settings():
+        print("Not yet implemented.")
+        time.sleep(SLEEP_TIME)
+
     def run():
         nonlocal not_done
         # If no firms are loaded, return to the trend menu.
@@ -114,9 +120,10 @@ def trend_menu():
             # Downloading the trend data.
             try:
                 trend = trends.get_trends(firm)
+                print("-"*40)
+                print("Searching for trends in: ", firm)
             except Exception as e:
                 print(e)
-                #print("Error downloading trend data for ", firm)
                 continue
             # If there's no data to download, continue to the next firm.
             if trend.empty:
@@ -130,22 +137,24 @@ def trend_menu():
             end = len(sig) - 1
             if any(sig[end-LOOK_BACK:end+1]):
                 # If a peak is detected, download news articles and adds relevancy score.
-                print(firm, ": Peak Detected")
+                print("Peak Detected!")
                 newsPaper = news_scraper.download_articles(firm)
                 newsPaper = news_scraper.mark_relevancy(newsPaper)
                 news['firms'][firm] = newsPaper
 
         df_peaks = json_handler.json_to_pd(news)
         if not df_peaks.empty:
-            s = ' '
-            for i in range(len(df_peaks)):
-                df_peaks['firm'][i] = s.join(df_peaks['firm'][i]).title()
             df_peaks = text_cleaner.clean(df_peaks)
             df_peaks = df_peaks.drop(columns = 'text')
             df_peaks = fake_news_classifier.classify(tfidf, nb_body, df_peaks)
             df_peaks.to_excel(PEAK_XLSX)
+            print("All relevant news articles downloaded to ", PEAK_XLSX)
+        else:
+            df_peaks.to_excel(PEAK_XLSX)
+            print("No articles found.")
         not_done = False
         time.sleep(SLEEP_TIME)
+
     def back():
         nonlocal not_done
         not_done = False
@@ -154,7 +163,7 @@ def trend_menu():
     while(not_done):
         clear()
         print('{0:^30s}'.format('Trend Options'))
-        print('-'*30)
+        print('-'*40)
         print("\n\n\n")
         print("Please select an option:\n")
         print("[0] Load Firm List XLSX")
@@ -193,6 +202,7 @@ def main():
     def exit():
         nonlocal not_done
         not_done = False
+        clear()
 
     not_done = True
     while(not_done):
