@@ -10,6 +10,7 @@ import news_scraper
 import fake_news_classifier
 import text_cleaner
 import json_handler
+import xlsx_to_csv
 
 ############ PEAK DETECTION SETTINGS ############################
 
@@ -44,12 +45,13 @@ NB_PKL = '../data/nb.pkl'
 # File path to save news articles from peak detections as a JSON
 PEAK_JSON = '../data/peak_articles.json'
 # File path to save news articles from peak detections as XLSX
-PEAK_XLSX = '../data/peak_articles.xlsx'
+OUTPUT_XLSX = '../data/output_data.xlsx'
 # File path to our input firm List
 INPUT_FIRMS = ''
 
 #################
 SLEEP_TIME = 1
+
 
 def acquisition_menu():
     print("Not yet implemented")
@@ -60,10 +62,8 @@ def trend_menu():
     # switch-case for Trend Menu
     def trend_switch(menu_choice):
         switcher = {
-            0: load_prompt,
-            1: output_prompt,
-            2: settings,
-            3: run,
+            0: settings,
+            1: run,
             9: back
         }
         return switcher.get(menu_choice)
@@ -90,10 +90,6 @@ def trend_menu():
             print('Firm list file name updated!')
             time.sleep(SLEEP_TIME)
 
-    def output_prompt():
-        print("Not yet implemented.")
-        time.sleep(SLEEP_TIME)
-
     def settings():
         print("Not yet implemented.")
         time.sleep(SLEEP_TIME)
@@ -105,7 +101,7 @@ def trend_menu():
             print('No firms are loaded to run Trend Finder.')
             time.sleep(SLEEP_TIME)
             return
-        # Pass CSV as first command line argument
+        # Pass CSV to reader to clean & load firm names.
         firms = reader.read_firms(INPUT_FIRMS)
 
         # If neither of our fake news classifiers exist, create & store them
@@ -124,6 +120,7 @@ def trend_menu():
                 print("Searching for trends in: ", firm)
             except Exception as e:
                 print(e)
+                time.sleep(SLEEP_TIME)
                 continue
             # If there's no data to download, continue to the next firm.
             if trend.empty:
@@ -146,13 +143,15 @@ def trend_menu():
         if not df_peaks.empty:
             df_peaks = text_cleaner.clean(df_peaks)
             df_peaks = df_peaks.drop(columns = 'text')
+            df_peaks = df_peaks.drop(columns = 'author')
             df_peaks = fake_news_classifier.classify(tfidf, nb_body, df_peaks)
-            df_peaks.to_excel(PEAK_XLSX)
-            print("All relevant news articles downloaded to ", PEAK_XLSX)
+            df_peaks.to_excel(OUTPUT_XLSX)
+            print("All relevant news articles downloaded to ", OUTPUT_XLSX)
         else:
-            df_peaks.to_excel(PEAK_XLSX)
+            df_peaks.to_excel(OUTPUT_XLSX)
             print("No articles found.")
         not_done = False
+        time.sleep(SLEEP_TIME)
         time.sleep(SLEEP_TIME)
 
     def back():
@@ -166,10 +165,8 @@ def trend_menu():
         print('-'*40)
         print("\n\n\n")
         print("Please select an option:\n")
-        print("[0] Load Firm List XLSX")
-        print("[1] Set Output XLSX")
-        print("[2] Adjust Settings")
-        print("[3] Run")
+        print("[0] Adjust Settings")
+        print("[1] Run")
         print("[9] Back")
         print("\n")
         menu_choice = input("Enter Integer Choice.\n>>> ")
@@ -178,6 +175,7 @@ def trend_menu():
             menu_choice = eval(menu_choice)
             trend_switch(menu_choice)()
         except Exception as e:
+            print(e)
             print("Error -- invalid input entered.")
             time.sleep(SLEEP_TIME)
             continue
@@ -187,6 +185,81 @@ def ranking_menu():
     print("Not yet implemented")
     time.sleep(SLEEP_TIME)
 
+def load_prompt():
+    global INPUT_FIRMS
+    clear()
+    title('Load Firm List')
+    print('\n\n\n\n\n')
+    print('*'*30)
+    print('NOTE: All data files are to be stored under the data folder. Any files not saved in this folder',
+    'will not be accessible.')
+    print('Acceptable Firm Lists include .xlsx and .csv files')
+    print('.xlsx will automatically be converted to .csv')
+    print('Do NOT include \'../data/\' in your file path.')
+    print('\n\n\n')
+    print("Current Firm List Input: {0}".format(INPUT_FIRMS if bool(INPUT_FIRMS) else "nothing loaded"))
+    print('\n')
+    input_filename = input("Please enter the firm list file name or 'back' to return to the Main Menu.\n>>> ")
+
+    if input_filename.lower() == 'back':
+        print('Returning to the Main Menu.')
+        time.sleep(SLEEP_TIME)
+    elif '.xlsx' in input_filename:
+        input_filename = '../data/' + input_filename
+        if path.exists(input_filename):
+            print('Converting to .csv')
+            xlsx_to_csv.convert(input_filename)
+            INPUT_FIRMS = input_filename.split('.xlsx')[0] + '.csv'
+            print('Firm list file name updated!')
+            time.sleep(SLEEP_TIME)
+        else:
+            print('File does not exist.')
+            time.sleep(SLEEP_TIME)
+            load_prompt()
+    elif '.csv' in input_filename:
+        input_filename = '../data/' + input_filename
+        if path.exists(input_filename):
+            INPUT_FIRMS = input_filename
+            print('Firm list file name updated!')
+            time.sleep(SLEEP_TIME)
+        else:
+            print('File does not exist.')
+            time.sleep(SLEEP_TIME)
+            load_prompt()
+    else:
+        print('Improper file format entered. Please try again.')
+        time.sleep(SLEEP_TIME)
+        load_prompt()
+
+def output_prompt():
+    global OUTPUT_XLSX
+    clear()
+    title('Output File Location')
+    print('\n\n\n\n\n')
+    print('*'*30)
+    print('NOTE: All data files are saved under the /data/ folder.')
+    print('Output file format is a .xlsx.')
+    print('Do NOT include \'../data/\' in your file path.')
+    print('\n\n\n')
+    print("Current Ouput File Location: {0}".format(OUTPUT_XLSX))
+    print('\n')
+    output_filename = input("Please enter the output file name or 'back' to return to the Trend Menu.\n>>> ")
+
+    if output_filename.lower() == 'back':
+        print('Returning to the Main Menu.')
+        time.sleep(SLEEP_TIME)
+    elif '.xlsx' in output_filename:
+        print('Changing output file location.')
+        time.sleep(SLEEP_TIME)
+        OUTPUT_XLSX = '../data/' + output_filename
+        print("Current Ouput File Location: {0}".format(OUTPUT_XLSX))
+        time.sleep(SLEEP_TIME)
+        time.sleep(SLEEP_TIME)
+    else:
+        print('Improper file format entered. Please try again.')
+        time.sleep(SLEEP_TIME)
+        output_prompt()
+
 def main():
 
     # switch-case used for the Main Menu
@@ -195,6 +268,8 @@ def main():
             0: trend_menu,
             1: acquisition_menu,
             2: ranking_menu,
+            3: load_prompt,
+            4: output_prompt,
             9: exit
         }
         return switcher.get(menu_choice)
@@ -213,6 +288,8 @@ def main():
         print("[0] Trends")
         print("[1] Acquisitions")
         print("[2] Rankings")
+        print("[3] Load Firm List")
+        print("[4] Change Output File Location")
         print("[9] Exit")
         print("\n\n")
         menu_choice = input("Enter Integer Choice.\n>>> ")
@@ -221,6 +298,7 @@ def main():
             menu_choice = eval(menu_choice)
             menu_switch(menu_choice)()
         except Exception as e:
+            print(e)
             print("Error -- invalid input entered.")
             time.sleep(SLEEP_TIME)
             continue
