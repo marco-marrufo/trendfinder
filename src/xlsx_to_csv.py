@@ -7,7 +7,7 @@ import sys
 # python3 xlsx_to_csv <INPUT LSX FILE PATH> <OPTIONAL OUTPUT CSV FILE PATH>
 def convert(xlsx_path):
     # Creating our csv path from our xlsx filename.
-    csv_path = xlsx_path.split('.xlsx')[0]+'csv'
+    csv_path = xlsx_path.split('.xlsx')[0]+'.csv'
 
     wb = xlrd.open_workbook(xlsx_path)
     sh = wb.sheet_by_name('Sheet1')

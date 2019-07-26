@@ -21,6 +21,7 @@ def download(keyword, topdomain, num_articles, rest):
 
     for result in search_news(query=keyword, tld=topdomain, lang='en', num=10, stop=num_articles, pause=rest):
         try:
+            print("------------------------------------------------------------")
             print('Searching for: ', keyword)
             article = {}
             news = Article(result)
@@ -42,7 +43,6 @@ def download(keyword, topdomain, num_articles, rest):
             newsPaper['articles'].append(article)
         except:
             print(result + " \nError: could not be downloaded.")
-        print("------------------------------------------------------------")
     return newsPaper
 
 def mark_relevancy(newsPaper):

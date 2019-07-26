@@ -12,6 +12,9 @@ import text_cleaner
 import json_handler
 import xlsx_to_csv
 
+from googlesearch import search_news
+from newspaper import Article
+
 ############ PEAK DETECTION SETTINGS ############################
 
 LAG = 5
@@ -49,12 +52,94 @@ OUTPUT_XLSX = '../data/output_data.xlsx'
 # File path to our input firm List
 INPUT_FIRMS = ''
 
-#################
+###################################################################
+
+# Time inbetween menu pauses.
 SLEEP_TIME = 1
 
 
-def acquisition_menu():
-    print("Not yet implemented")
+# TODO:
+# - Finish acquisitions.
+# - Finish rankings.
+# - Implement relevancy filtering.
+# - Implement fake news filtering.
+# - Add command line shortcuts to skip menu.
+# - Document
+# - Finish accompying jupyter notebook examples.
+# - Fix print lines inconsistencies (Print at the top!)
+# - Move article download from acquisitions to news_scraper.
+
+def acquisitions():
+
+    # Naive method -- news scraper downloads articles and compares title against acquisition matches list.
+    acquisition_matches = ["buys", "buy", "bought", "acquires", "acquire", "acquisitions", "acquisition", "purchases", "purchase",
+                           "merger", "merge", "merges, ""merging", "invested", "invests", "invest", "secure"]
+
+    # Lambda functions used to check if the news article contains any acqusition terms.
+    contains_acquisition = lambda x: sub_contains(x)
+    sub_contains = lambda y: all(y in s for s in acquisition_matches)
+
+    # Ensure that there's an input path to download firms from.
+    if not INPUT_FIRMS:
+        print('No firms are loaded to run Acquisitions.')
+        time.sleep(SLEEP_TIME)
+        return
+
+    # If neither of our fake news classifiers exist, create & store them
+    if not path.exists(TFIDF_PKL) or not path.exists(NB_PKL):
+        fake_news_classifier.create_model(TRAIN_PKL, TFIDF_PKL, NB_PKL)
+    tfidf = fake_news_classifier.load_model(TFIDF_PKL)
+    nb_body = fake_news_classifier.load_model(NB_PKL)
+
+    firms = reader.read_firms(INPUT_FIRMS)
+
+    all_news = {}
+    all_news['firms'] = {}
+    for firm in firms:
+        newsPaper = {
+            "articles": []
+        }
+        print("------------------------------------------------------------")
+        print("Searching for acuisitions: ", firm)
+        for result in search_news(query=firm+" acquisition", tld="co.in", num=10, stop=5, pause=2):
+            try:
+                article = {}
+                news = Article(result)
+                news.download()
+                news.parse()
+                news.nlp()
+                print("Downloaded: ", news.title)
+                if any([x in acquisition_matches for x in news.title.lower().split()]):
+                    print("*"*10 + "Acquisition found." + "*"*10)
+                    article['link'] = result
+                    article['title'] = news.title
+                    article['text'] = news.text
+                    article['firm'] = firm
+                    article['keywords'] = news.keywords
+                    if news.publish_date:
+                        article['published'] = news.publish_date.isoformat()
+                    else:
+                        article['published'] = news.publish_date
+                    article['author'] = news.authors
+                    newsPaper['articles'].append(article)
+            except Exception as e:
+                print("Error: Article could not be downloaded.")
+        if bool(newsPaper['articles']):
+            newsPaper = news_scraper.mark_relevancy(newsPaper)
+            all_news['firms'][firm] = newsPaper
+
+    df_acq = json_handler.json_to_pd(all_news)
+    if not df_acq.empty:
+        df_acq = text_cleaner.clean(df_acq)
+        df_acq = df_acq.drop(columns = 'text')
+        df_acq = df_acq.drop(columns = 'author')
+        df_acq = fake_news_classifier.classify(tfidf, nb_body, df_acq)
+        df_acq.to_excel(OUTPUT_XLSX)
+        print("All relevant news articles downloaded to ", OUTPUT_XLSX)
+    else:
+        df_acq.to_excel(OUTPUT_XLSX)
+        print("No articles found.")
+    time.sleep(SLEEP_TIME)
     time.sleep(SLEEP_TIME)
 
 def trend_menu():
@@ -266,7 +351,7 @@ def main():
     def menu_switch(menu_choice):
         switcher = {
             0: trend_menu,
-            1: acquisition_menu,
+            1: acquisitions,
             2: ranking_menu,
             3: load_prompt,
             4: output_prompt,
