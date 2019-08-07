@@ -54,12 +54,7 @@ INPUT_FIRMS = ''
 
 ###################################################################
 
-# Time inbetween menu pauses.
-SLEEP_TIME = 1
-
-
 # TODO:
-# - Finish acquisitions.
 # - Finish rankings.
 # - Implement relevancy filtering.
 # - Implement fake news filtering.
@@ -68,6 +63,9 @@ SLEEP_TIME = 1
 # - Finish accompying jupyter notebook examples.
 # - Fix print lines inconsistencies (Print at the top!)
 # - Move article download from acquisitions to news_scraper.
+# - Add timestamp to output files
+# - Enter to continue before clearing.
+# - Check to see if TrendFinder runs from current directory.
 
 def acquisitions():
 
@@ -82,7 +80,7 @@ def acquisitions():
     # Ensure that there's an input path to download firms from.
     if not INPUT_FIRMS:
         print('No firms are loaded to run Acquisitions.')
-        time.sleep(SLEEP_TIME)
+        input("Press Enter to continue...")
         return
 
     # If neither of our fake news classifiers exist, create & store them
@@ -139,8 +137,7 @@ def acquisitions():
     else:
         df_acq.to_excel(OUTPUT_XLSX)
         print("No articles found.")
-    time.sleep(SLEEP_TIME)
-    time.sleep(SLEEP_TIME)
+    input("Press Enter to continue...")
 
 def trend_menu():
 
@@ -169,22 +166,22 @@ def trend_menu():
         input_filename = input("Please enter the firm list file name or 'quit' to return to the Trend Menu.\n>>> ")
         if input_filename.lower() == 'quit':
             print('Quitting without saving.')
-            time.sleep(SLEEP_TIME)
+            input("Press Enter to continue...")
         else:
             INPUT_FIRMS = '../data/' + input_filename
             print('Firm list file name updated!')
-            time.sleep(SLEEP_TIME)
+            input("Press Enter to continue...")
 
     def settings():
         print("Not yet implemented.")
-        time.sleep(SLEEP_TIME)
+        input("Press Enter to continue...")
 
     def run():
         nonlocal not_done
         # If no firms are loaded, return to the trend menu.
         if not INPUT_FIRMS:
             print('No firms are loaded to run Trend Finder.')
-            time.sleep(SLEEP_TIME)
+            input("Press Enter to continue...")
             return
         # Pass CSV to reader to clean & load firm names.
         firms = reader.read_firms(INPUT_FIRMS)
@@ -205,7 +202,7 @@ def trend_menu():
                 print("Searching for trends in: ", firm)
             except Exception as e:
                 print(e)
-                time.sleep(SLEEP_TIME)
+                input("Press Enter to continue...")
                 continue
             # If there's no data to download, continue to the next firm.
             if trend.empty:
@@ -236,8 +233,7 @@ def trend_menu():
             df_peaks.to_excel(OUTPUT_XLSX)
             print("No articles found.")
         not_done = False
-        time.sleep(SLEEP_TIME)
-        time.sleep(SLEEP_TIME)
+        input("Press Enter to continue...")
 
     def back():
         nonlocal not_done
@@ -262,13 +258,13 @@ def trend_menu():
         except Exception as e:
             print(e)
             print("Error -- invalid input entered.")
-            time.sleep(SLEEP_TIME)
+            input("Press Enter to continue...")
             continue
 
 
 def ranking_menu():
     print("Not yet implemented")
-    time.sleep(SLEEP_TIME)
+    input("Press Enter to continue...")
 
 def load_prompt():
     global INPUT_FIRMS
@@ -288,7 +284,7 @@ def load_prompt():
 
     if input_filename.lower() == 'back':
         print('Returning to the Main Menu.')
-        time.sleep(SLEEP_TIME)
+        input("Press Enter to continue...")
     elif '.xlsx' in input_filename:
         input_filename = '../data/' + input_filename
         if path.exists(input_filename):
@@ -296,24 +292,24 @@ def load_prompt():
             xlsx_to_csv.convert(input_filename)
             INPUT_FIRMS = input_filename.split('.xlsx')[0] + '.csv'
             print('Firm list file name updated!')
-            time.sleep(SLEEP_TIME)
+            input("Press Enter to continue...")
         else:
             print('File does not exist.')
-            time.sleep(SLEEP_TIME)
+            input("Press Enter to continue...")
             load_prompt()
     elif '.csv' in input_filename:
         input_filename = '../data/' + input_filename
         if path.exists(input_filename):
             INPUT_FIRMS = input_filename
             print('Firm list file name updated!')
-            time.sleep(SLEEP_TIME)
+            input("Press Enter to continue...")
         else:
             print('File does not exist.')
-            time.sleep(SLEEP_TIME)
+            input("Press Enter to continue...")
             load_prompt()
     else:
         print('Improper file format entered. Please try again.')
-        time.sleep(SLEEP_TIME)
+        input("Press Enter to continue...")
         load_prompt()
 
 def output_prompt():
@@ -332,17 +328,16 @@ def output_prompt():
 
     if output_filename.lower() == 'back':
         print('Returning to the Main Menu.')
-        time.sleep(SLEEP_TIME)
+        input("Press Enter to continue...")
     elif '.xlsx' in output_filename:
         print('Changing output file location.')
-        time.sleep(SLEEP_TIME)
+        input("Press Enter to continue...")
         OUTPUT_XLSX = '../data/' + output_filename
         print("Current Ouput File Location: {0}".format(OUTPUT_XLSX))
-        time.sleep(SLEEP_TIME)
-        time.sleep(SLEEP_TIME)
+        input("Press Enter to continue...")
     else:
         print('Improper file format entered. Please try again.')
-        time.sleep(SLEEP_TIME)
+        input("Press Enter to continue...")
         output_prompt()
 
 def main():
@@ -385,7 +380,7 @@ def main():
         except Exception as e:
             print(e)
             print("Error -- invalid input entered.")
-            time.sleep(SLEEP_TIME)
+            input("Press Enter to continue...")
             continue
 
 
