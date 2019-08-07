@@ -1,0 +1,22 @@
+macOS Installation:
+
+Due to the large number of dependencies with this project, it is highly recommended to install and set-up a virtualenv to
+create an isolated Python environment for TrendFinder.
+
+Please see the guide below for installing and setting up virtualenv
+https://sourabhbajaj.com/mac-setup/Python/virtualenv.html
+
+For jupyter notebook, you may need to set-up a separate kernel to work with the virtualenv. See the guide below.
+https://anbasile.github.io/programming/2017/06/25/jupyter-venv/
+
+
+
+
+1. newspaper3k -- https://pypi.org/project/newspaper3k/
+pip3 install newspaper3k
+
+2. googlesearch -- https://pypi.org/project/google/
+pip3 install googlesearch
+
+3. scikit-learn -- https://scikit-learn.org/stable/install.html (Assuming numpy & scipy are pre-installed)
+pip3 install scikit-learn
