@@ -3,6 +3,8 @@ import time
 import os
 import os.path
 from os import path
+
+####
 import reader
 import peak_detection
 import trends
@@ -11,6 +13,8 @@ import fake_news_classifier
 import text_cleaner
 import json_handler
 import xlsx_to_csv
+import filters
+####
 
 from googlesearch import search_news
 from newspaper import Article
@@ -132,6 +136,10 @@ def acquisitions():
         df_acq = df_acq.drop(columns = 'text')
         df_acq = df_acq.drop(columns = 'author')
         df_acq = fake_news_classifier.classify(tfidf, nb_body, df_acq)
+        # Removes any rows in our df that are fake or do not have enough relevancy to the firm.
+        print("Filtering dataframe for labels and relevancy.")
+        df_acq = filters.filter_label(df_acq)
+        df_acq = filters.filter_relevancy(df_acq)
         df_acq.to_excel(OUTPUT_XLSX)
         print("All relevant news articles downloaded to ", OUTPUT_XLSX)
     else:
@@ -202,7 +210,6 @@ def trend_menu():
                 print("Searching for trends in: ", firm)
             except Exception as e:
                 print(e)
-                input("Press Enter to continue...")
                 continue
             # If there's no data to download, continue to the next firm.
             if trend.empty:
@@ -227,6 +234,10 @@ def trend_menu():
             df_peaks = df_peaks.drop(columns = 'text')
             df_peaks = df_peaks.drop(columns = 'author')
             df_peaks = fake_news_classifier.classify(tfidf, nb_body, df_peaks)
+            # Removes any rows in our df that are fake or do not have enough relevancy to the firm.
+            print("Filtering dataframe for labels and relevancy.")
+            df_peaks = filters.filter_label(df_peaks)
+            df_peaks = filters.filter_relevancy(df_peaks)
             df_peaks.to_excel(OUTPUT_XLSX)
             print("All relevant news articles downloaded to ", OUTPUT_XLSX)
         else:
@@ -331,7 +342,6 @@ def output_prompt():
         input("Press Enter to continue...")
     elif '.xlsx' in output_filename:
         print('Changing output file location.')
-        input("Press Enter to continue...")
         OUTPUT_XLSX = '../data/' + output_filename
         print("Current Ouput File Location: {0}".format(OUTPUT_XLSX))
         input("Press Enter to continue...")
