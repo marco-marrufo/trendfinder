@@ -133,6 +133,7 @@ def acquisitions():
     df_acq = json_handler.json_to_pd(all_news)
     if not df_acq.empty:
         df_acq = text_cleaner.clean(df_acq)
+        # Removes some unnecessary columns.
         df_acq = df_acq.drop(columns = 'text')
         df_acq = df_acq.drop(columns = 'author')
         df_acq = fake_news_classifier.classify(tfidf, nb_body, df_acq)
@@ -185,7 +186,7 @@ def trend_menu():
         input("Press Enter to continue...")
 
     def run():
-        nonlocal not_done
+        nonlocal done
         # If no firms are loaded, return to the trend menu.
         if not INPUT_FIRMS:
             print('No firms are loaded to run Trend Finder.')
@@ -231,6 +232,7 @@ def trend_menu():
         df_peaks = json_handler.json_to_pd(news)
         if not df_peaks.empty:
             df_peaks = text_cleaner.clean(df_peaks)
+            # Removes some unnecessary columns.
             df_peaks = df_peaks.drop(columns = 'text')
             df_peaks = df_peaks.drop(columns = 'author')
             df_peaks = fake_news_classifier.classify(tfidf, nb_body, df_peaks)
@@ -243,15 +245,15 @@ def trend_menu():
         else:
             df_peaks.to_excel(OUTPUT_XLSX)
             print("No articles found.")
-        not_done = False
+         = False
         input("Press Enter to continue...")
 
     def back():
-        nonlocal not_done
-        not_done = False
+        nonlocal done
+        done = True
 
-    not_done = True
-    while(not_done):
+    done = False
+    while(not done):
         clear()
         print('{0:^30s}'.format('Trend Options'))
         print('-'*40)
@@ -365,12 +367,12 @@ def main():
         return switcher.get(menu_choice)
 
     def exit():
-        nonlocal not_done
-        not_done = False
+        nonlocal done
+        done = True
         clear()
 
-    not_done = True
-    while(not_done):
+    done = False
+    while(not done):
         clear()
         title('TrendFinder Main Menu')
         print("\n\n\n\n\n")
