@@ -60,15 +60,11 @@ INPUT_FIRMS = ''
 
 # TODO:
 # - Finish rankings.
-# - Implement relevancy filtering.
-# - Implement fake news filtering.
-# - Add command line shortcuts to skip menu.
-# - Document
+# - Add command line shortcuts to skip menu. (CANCELED)
 # - Finish accompying jupyter notebook examples.
 # - Fix print lines inconsistencies (Print at the top!)
 # - Move article download from acquisitions to news_scraper.
 # - Add timestamp to output files
-# - Enter to continue before clearing.
 # - Check to see if TrendFinder runs from current directory.
 
 def acquisitions():
